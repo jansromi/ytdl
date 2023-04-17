@@ -6,11 +6,19 @@ from tkinter import filedialog, Tk
 from moviepy.editor import VideoFileClip
 from pytube import YouTube
 
+
 def Download(link, path):
-    youtubeObject = YouTube(link)
-    youtubeObject = youtubeObject.streams.get_highest_resolution()
+    """
+     Downloads the YouTube video from the given link 
+     and saves it in the specified path. Returns the filename of the downloaded video.
+     
+     link = link to Youtube-video, as in https://www.youtube.com/watch?v=6uHPHn5Zwmo
+     path = desired filepath where to save.
+    """
     try:
-        print("Starting download...")
+        youtubeObject = YouTube(link)
+        youtubeObject = youtubeObject.streams.get_highest_resolution()
+        print(f"Downloading {youtubeObject.title}...")
         youtubeObject.download(output_path=path)
     except:
         print("An error has occurred")
@@ -19,6 +27,13 @@ def Download(link, path):
 
 
 def ConvertMP4toMP3(filepath):
+    """
+    Converts the video file at the specified filepath from MP4 format to MP3 format using moviepy.
+    Returns the filename of the converted audio file.
+
+    filepath : path of the .mp4 file
+    """
+    print(f"Converting {filepath} to .mp3")
     video_file = VideoFileClip(filepath)
     audio_file = video_file.audio
     mp3_filename = filepath.replace(".mp4", ".mp3")
@@ -33,11 +48,20 @@ root = Tk()
 root.withdraw()
 
 # create the parser for command-line arguments
-parser = argparse.ArgumentParser(description="Download and convert YouTube videos to MP3")
+parser = argparse.ArgumentParser(
+    description="Download and convert YouTube videos to MP3",
+    epilog="Example usage: python youtube_downloader.py https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
 
 # add the arguments
 parser.add_argument("url", metavar="URL", help="the YouTube video URL")
-parser.add_argument("-o", "--output", metavar="PATH", help="the output directory")
+parser.add_argument(
+    "-o",
+    "--output",
+    metavar="PATH",
+    help="the output directory. If not specified, a file dialog will be shown.",
+)
 
 # parse the arguments
 args = parser.parse_args()
