@@ -5,58 +5,85 @@ from tkinter import filedialog, Tk
 
 from pytube import YouTube
 
+def CreateArgParser():
+    parser = argparse.ArgumentParser(
+        description="Download and convert YouTube videos to MP3",
+        epilog="Example usage: python youtube_downloader.py https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("url", metavar="URL", help="the YouTube video URL")
+    parser.add_argument(
+        "-o",
+        "--output",
+        metavar="PATH",
+        help="the output directory. If not specified, a file dialog will be shown.",
+    )
+    parser.add_argument(
+        "-v",
+        metavar="VIDEO",
+        action="store_true",
+        help="downloads the youtube-link as a video",
+    )
 
-def Download(link, path):
+    return parser
+
+def DownloadMP3(link, path):
     """
-     Downloads the YouTube video from the given link 
-     and saves it in the specified path. Returns the filename of the downloaded video.
-     
-     link = link to Youtube-video, as in https://www.youtube.com/watch?v=6uHPHn5Zwmo
-     path = desired filepath where to save.
+    Downloads the YouTube video from the given link 
+    and saves it in the specified path. Returns the filename of the downloaded video.
+
+    link = link to Youtube-video, as in https://www.youtube.com/watch?v=6uHPHn5Zwmo
+    path = desired filepath where to save.
     """
     try:
         youtubeObject = YouTube(link)
         youtubeObject = youtubeObject.streams.filter(only_audio=True).first()
         print(f"Downloading {youtubeObject.title}...")
-        return youtubeObject.download(output_path=path)
-    except:
-        print("An error has occurred")
-    print("Download is completed successfully")
+        # Get the default filename from pytube and add the ".mp3" extension
+        filename = youtubeObject.default_filename.replace(".mp4", ".mp3")
+        filepath = os.path.join(path, filename)
+        youtubeObject.download(output_path=path, filename=filename)
+        return filepath
+    except Exception as e:
+        print(f"An error has occurred: {e}")
+        sys.exit(0)
+
+def DownloadMP4(link, path):
+    """
+    complete!
+    """
+
+if __name__ == "__main__":
+    # hide the main window
+    root = Tk()
+    root.withdraw()
+
+   
+    parser = CreateArgParser()
+
+    # parse the arguments and check if the user requested help
+    args = parser.parse_args()
+    if "--help" in sys.argv or "-h" in sys.argv:
+        parser.print_help()
+        sys.exit(0)
+
+    # get the YouTube URL and output directory
+    link = args.url
+    filepath = args.output
+    asMp4 = args.mp4
+    downloaded = None
+    if not filepath:
+        filepath = filedialog.askdirectory()
+    if not asMp4:
+        downloaded = DownloadMP3(link, filepath)
+    else:
+        downloaded = DownloadMP4(link, filepath)
+    
+    if downloaded is not None:
+        print(f"Conversion completed successfully. File saved at {downloaded}")
 
 
-# hide the main window
-root = Tk()
-root.withdraw()
-# create the parser for command-line arguments
-parser = argparse.ArgumentParser(
-    description="Download and convert YouTube videos to MP3",
-    epilog="Example usage: python youtube_downloader.py https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-)
-# add the arguments
-parser.add_argument("url", metavar="URL", help="the YouTube video URL")
-parser.add_argument(
-    "-o",
-    "--output",
-    metavar="PATH",
-    help="the output directory. If not specified, a file dialog will be shown.",
-)
-# parse the arguments
-args = parser.parse_args()
-# check if the user requested help
-if "help" in args:
-    parser.print_help()
-    sys.exit(0)
-# get the YouTube URL and output directory
-link = args.url
-filepath = args.output
-if not filepath:
-    filepath = filedialog.askdirectory()
-file = Download(link, filepath)
-base, ext = os.path.splitext(file)
-new_file = base + '.mp3'
-os.rename(file, new_file)
-print(f"Conversion completed successfully. MP3 file saved at {new_file}")
+
 
 
 
