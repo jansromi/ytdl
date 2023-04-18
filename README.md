@@ -7,7 +7,9 @@ Ytdl is a quick and dirty command line tool for downloading Youtube-videos as au
 - tkinter module
 
 To install these modules, simply run the following command:
+
 	pip install pytube
+
 	pip install tkinter
 
 ### Usage
