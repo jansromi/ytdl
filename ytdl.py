@@ -20,7 +20,6 @@ def CreateArgParser():
     )
     parser.add_argument(
         "-v",
-        metavar="VIDEO",
         action="store_true",
         help="downloads the youtube-link as a video",
     )
@@ -48,17 +47,31 @@ def DownloadMP3(link, path):
         print(f"An error has occurred: {e}")
         sys.exit(0)
 
-def DownloadMP4(link, path):
+def DownloadVideo(link, path):
     """
-    complete!
+    Downloads the YouTube video from the given link and saves it in the specified path.
+    Returns the filename of the downloaded video.
+
+    link = link to Youtube-video, as in https://www.youtube.com/watch?v=6uHPHn5Zwmo
+    path = desired filepath where to save.
     """
+    try:
+        youtubeObject = YouTube(link)
+        youtubeObject = youtubeObject.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+        print(f"Downloading {youtubeObject.title}...")
+        filename = youtubeObject.default_filename
+        filepath = os.path.join(path, filename)
+        youtubeObject.download(output_path=path, filename=filename)
+        return filepath
+    except Exception as e:
+        print(f"An error has occurred: {e}")
+        sys.exit(0)
 
 if __name__ == "__main__":
     # hide the main window
     root = Tk()
     root.withdraw()
 
-   
     parser = CreateArgParser()
 
     # parse the arguments and check if the user requested help
@@ -70,17 +83,18 @@ if __name__ == "__main__":
     # get the YouTube URL and output directory
     link = args.url
     filepath = args.output
-    asMp4 = args.mp4
+    asVideo = args.v  
     downloaded = None
     if not filepath:
         filepath = filedialog.askdirectory()
-    if not asMp4:
+    if not asVideo:
         downloaded = DownloadMP3(link, filepath)
     else:
-        downloaded = DownloadMP4(link, filepath)
-    
+        downloaded = DownloadVideo(link, filepath)
+
     if downloaded is not None:
         print(f"Conversion completed successfully. File saved at {downloaded}")
+
 
 
 
